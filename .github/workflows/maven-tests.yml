@@ -1,0 +1,44 @@
+# Название проверки, которое будет отображаться в GitHub Actions.
+name: Maven Tests
+
+# Указываем, при каких событиях GitHub должен запускать проверку.
+on:
+  # Запускать тесты при создании и обновлении Pull Request в master.
+  pull_request:
+    branches:
+      - master
+
+  # Также запускать тесты после push в test или master.
+  push:
+    branches:
+      - test
+      - master
+
+# Ограничиваем разрешения workflow только чтением репозитория.
+permissions:
+  contents: read
+
+# Описываем задачи автоматической проверки.
+jobs:
+  tests:
+    # Используем виртуальную машину с Ubuntu.
+    runs-on: ubuntu-latest
+
+    # Перечисляем шаги, которые GitHub выполнит последовательно.
+    steps:
+      # Получаем исходный код репозитория.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Устанавливаем Java 23 и настраиваем кеш Maven.
+      - name: Set up Java 23
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '23'
+          cache: maven
+
+      # Переходим в папку api и запускаем очистку и все Maven-тесты.
+      - name: Run Maven tests
+        run: mvn -B clean test
+        working-directory: api

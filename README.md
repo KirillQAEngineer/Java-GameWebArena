@@ -1,88 +1,122 @@
 # Java-GameWebArena
 
-Учебный проект AQA на Java для практики автоматизированного тестирования Web, Android и iOS.
+Учебный проект AQA на Java для практики автоматизации Web, Android и iOS.
 
 ## 1. Назначение проекта
 
-Проект представляет собой игровое приложение с REST API и минимальным пользовательским интерфейсом. Он предназначен для разработки и запуска автоматизированных тестов, изучения Java Automation Testing и CI/CD.
+Java-GameWebArena — игровое приложение с REST API и Web UI для самостоятельной разработки и запуска автотестов.
 
-Цель — не менее 50 автотестов.
+Основные задачи:
+- Практика Java Automation Testing.
+- Изучение REST API и HTTP.
+- Практика Web UI Automation.
+- Подготовка основы для Android и iOS Automation.
+- Изучение Maven, Git, GitHub и CI/CD.
+
+Web UI и REST API обслуживаются одним Spring Boot приложением. Отдельный frontend-сервер не требуется.
 
 ## 2. Технологический стек
 
+### Backend
 - Java 23
 - Spring Boot 4.1.1
 - Spring MVC
 - Bean Validation
 - Maven
+
+### Автоматизированное тестирование
 - JUnit 5
 - Spring Boot Test
 - MockMvc
 - REST Assured 6.2.0
 - Mockito
+
+### Frontend
+- HTML5
+- CSS3
+- JavaScript
+- SVG
+
+### Инструменты
 - Git и GitHub
 - GitHub Actions
+- Maven Surefire
 
-## 3. Архитектура
+## 3. Архитектура проекта
 
-Серверная часть разделена на три основных слоя.
+Backend построен по трёхслойной архитектуре:
 
-### Model
+- Model — Character.java: модель персонажа и валидация.
+- Controller — CharacterController.java: обработка HTTP-запросов.
+- Service — CharacterService.java: бизнес-логика и управление персонажами.
 
-`Character.java` описывает игрового персонажа: ID, имя, здоровье, силу атаки, опыт и уровень. Для проверки входящих данных используются Bean Validation.
+Данные хранятся в LinkedHashMap в оперативной памяти. После перезапуска приложения изменения теряются.
 
-### Controller
+Frontend:
+- web/index.html — структура страницы.
+- web/css/style.css — оформление и адаптация.
+- web/js/app.js — взаимодействие с REST API.
+- web/assets/characters/ — SVG-портреты персонажей.
 
-`CharacterController.java` принимает HTTP-запросы, вызывает сервисный слой и возвращает HTTP-ответы.
-
-### Service
-
-`CharacterService.java` содержит бизнес-логику создания, чтения, обновления и удаления персонажей.
-
-На текущем этапе персонажи хранятся в `LinkedHashMap` в оперативной памяти. Данные не сохраняются после перезапуска приложения.
+Папка web подключена к Maven-ресурсам и публикуется как статические ресурсы Spring Boot.
 
 ### Схема взаимодействия
 
-Клиент или автотест отправляет HTTP-запрос в Controller. Controller вызывает Service. Service работает с Model и возвращает результат контроллеру.
+Браузер → Spring Boot → CharacterController → CharacterService → Character.
+
+Frontend получает данные через REST API и отображает персонажей.
 
 ## 4. Структура проекта
 
 ```text
 Java-GameWebArena/
-├── .github/workflows/maven-tests.yml
+├── .github/
+│   └── workflows/
+│       └── maven-tests.yml
 ├── api/
 │   ├── pom.xml
 │   └── src/
-│       ├── main/java/
-│       │   ├── Main.java
-│       │   └── com/javarpgarena/
-│       │       ├── JavaRpgArenaApplication.java
-│       │       ├── controller/CharacterController.java
-│       │       ├── model/Character.java
-│       │       └── service/CharacterService.java
-│       └── test/java/com/javarpgarena/
-│           ├── controller/
-│           │   ├── CharacterApiTest.java
-│           │   ├── CharacterApiNegativeTest.java
-│           │   └── CharacterControllerTest.java
-│           └── service/CharacterServiceTest.java
+│       ├── main/
+│       │   ├── java/
+│       │   │   ├── Main.java
+│       │   │   └── com/javarpgarena/
+│       │   │       ├── JavaRpgArenaApplication.java
+│       │   │       ├── controller/
+│       │   │       │   └── CharacterController.java
+│       │   │       ├── model/
+│       │   │       │   └── Character.java
+│       │   │       └── service/
+│       │   │           └── CharacterService.java
+│       │   └── resources/
+│       └── test/
 ├── web/
+│   ├── index.html
+│   ├── css/
+│   │   └── style.css
+│   ├── js/
+│   │   └── app.js
+│   └── assets/
+│       └── characters/
+│           ├── adventurer.svg
+│           ├── mage.svg
+│           └── warrior.svg
 └── README.md
+```
 
 ## 5. REST API
 
-Базовый адрес: /api/characters.
+Базовый адрес: `http://localhost:8080/api/characters`
 
 | Метод | Endpoint | Назначение | Ответ |
 |---|---|---|---|
-| GET | /api/characters | Получить всех персонажей | 200 OK |
-| GET | /api/characters/{id} | Получить персонажа | 200 OK |
-| POST | /api/characters | Создать персонажа | 201 Created |
-| PUT | /api/characters/{id} | Обновить персонажа | 200 OK |
-| DELETE | /api/characters/{id} | Удалить персонажа | 204 No Content |
+| GET | `/api/characters` | Получить всех персонажей | 200 |
+| GET | `/api/characters/{id}` | Получить персонажа | 200 |
+| POST | `/api/characters` | Создать персонажа | 201 |
+| PUT | `/api/characters/{id}` | Обновить персонажа | 200 |
+| DELETE | `/api/characters/{id}` | Удалить персонажа | 204 |
 
 Дополнительные ответы:
-- 400 Bad Request — некорректные входящие данные.
+- 400 Bad Request — ошибка валидации.
 - 404 Not Found — персонаж не найден.
 
 ### Начальные данные
@@ -92,26 +126,86 @@ Java-GameWebArena/
 | 1 | Warrior | 100 | 20 | 0 | 1 |
 | 2 | Mage | 70 | 35 | 0 | 1 |
 
-## 6. План автоматизированного тестирования
+Валидация модели:
+- name — не должен быть пустым.
+- health — минимум 1.
+- attack — минимум 0.
+- experience — минимум 0.
+- level — минимум 1.
 
-Цель проекта — не менее 50 автотестов.
+## 6. Web UI
+
+Интерфейс выполнен в стилистике Pixel Art RPG.
+
+Функциональность:
+- Просмотр персонажей.
+- Создание персонажа.
+- Редактирование характеристик.
+- Удаление персонажа.
+- Обновление списка.
+- Отображение HP, ATK, EXP и LVL.
+- Полосы здоровья и опыта.
+
+### Селекторы для UI Automation
+
+| Элемент | data-testid |
+|---|---|
+| Список персонажей | characters-list |
+| Карточка персонажа | character-card |
+| Кнопка обновления | refresh-button |
+| Форма | character-form |
+| Поле имени | name-input |
+| Поле здоровья | health-input |
+| Поле атаки | attack-input |
+| Поле опыта | experience-input |
+| Поле уровня | level-input |
+| Кнопка сохранения | submit-button |
+| Кнопка отмены | cancel-button |
+| Кнопка редактирования | edit-button |
+| Кнопка удаления | delete-button |
+| Уведомления | notification |
+
+Selenium и мобильные тестовые фреймворки пока не подключены.
+
+## 7. План автоматизированного тестирования
+
+Целевой ориентир проекта — 80 автотестов.
 
 | Категория | Количество | Статус |
 |---|---:|---|
 | API CRUD | 14 | Готово |
 | API негативные сценарии и валидация | 10 | Готово |
-| UI функциональные сценарии | 10 | Запланировано |
-| UI негативные сценарии | 5 | Запланировано |
-| Интеграционные и дополнительные проверки | 5 | Запланировано |
-| **Всего** | **50** | |
+| UI функциональные | 10 | Самостоятельная разработка |
+| UI Android негативные | 5 | Самостоятельная разработка |
+| UI Android функциональные | 10 | Самостоятельная разработка |
+| UI iOS негативные | 5 | Самостоятельная разработка |
+| UI iOS функциональные | 10 | Самостоятельная разработка |
+| UI негативные | 5 | Самостоятельная разработка |
+| Интеграционные и дополнительные | 5 | Запланировано |
 
-## 7. Локальный запуск
+Сумма перечисленных категорий составляет 74 теста. Для достижения цели в 80 тестов необходимо дополнительно определить ещё 6 сценариев.
 
-Требуются Java 23 и Maven.
+Текущий результат:
+- 24 API-теста успешно проходят.
+- Failures: 0.
+- Errors: 0.
+- Skipped: 0.
+- Web UI проверен вручную.
 
-Проверка Java: `java -version`
+## 8. Локальный запуск
 
-Проверка Maven: `mvn -version`
+Требования:
+- Java 23.
+- Maven.
+- Git.
+
+### Проверка версий
+
+```bash
+java -version
+mvn -version
+git --version
+```
 
 ### Запуск приложения
 
@@ -122,7 +216,24 @@ cd api
 mvn spring-boot:run
 ```
 
-API будет доступно по адресу: http://localhost:8080/api/characters
+Приложение будет доступно по адресам:
+
+- Web UI: http://localhost:8080/
+- REST API: http://localhost:8080/api/characters
+
+Для остановки приложения нажмите Ctrl+C в терминале.
+
+### Проверка API
+
+```bash
+curl http://localhost:8080/api/characters
+```
+
+### Проверка Web UI
+
+Откройте в браузере:
+
+http://localhost:8080/
 
 ### Запуск тестов
 
@@ -133,57 +244,57 @@ cd api
 mvn clean test
 ```
 
-`clean` удаляет результаты предыдущей сборки, `test` запускает тесты.
+- clean удаляет предыдущие результаты сборки.
+- test компилирует и запускает автоматизированные тесты.
+- Maven Surefire формирует отчёты в target/surefire-reports/.
 
-Отчёты Maven находятся в `api/target/surefire-reports/`.
+## 9. CI/CD — GitHub Actions
 
-## 8. CI/CD — GitHub Actions
+Workflow расположен в:
 
-Workflow расположен в `.github/workflows/maven-tests.yml`.
+`.github/workflows/maven-tests.yml`
 
-Он запускается при push в ветки `test` и `master`, а также при создании или обновлении Pull Request в `master`.
+Он запускается при:
+- Push в ветки test и master.
+- Создании или обновлении Pull Request в master.
 
-Этапы CI:
+Основные этапы:
 1. Получение исходного кода.
 2. Установка Java 23 Temurin.
-3. Настройка кеша Maven.
-4. Выполнение `mvn -B clean test` в директории `api`.
-5. Публикация результата в GitHub Actions.
+3. Настройка Maven cache.
+4. Запуск `mvn -B clean test` в директории api.
+5. Проверка результата сборки.
 
-Результаты можно посмотреть во вкладке Actions репозитория.
+Результаты доступны во вкладке Actions GitHub-репозитория.
 
-## 9. Git workflow
+## 10. Git workflow
 
-Основная ветка — `master`. Рабочая ветка — `test`.
+- Основная ветка: master.
+- Рабочая ветка: test.
+- Разработка ведётся в test.
+- Перед публикацией запускаются тесты.
+- Документация обновляется вместе с кодом.
+- Изменения коммитятся и отправляются в GitHub.
+- Pull Request проверяется перед Merge.
+- Merge выполняется только после согласования.
 
-Порядок работы:
-1. Разработка в ветке `test`.
-2. Локальный запуск тестов.
-3. Создание коммита.
-4. Push в GitHub.
-5. Автоматический запуск CI.
-6. Проверка Pull Request.
-7. Перенос изменений в `master` после проверки и согласования.
-
-Пример отправки изменений из корня проекта:
+Пример публикации изменений:
 
 ```bash
 git status
-git add .
-git commit -m "Describe your changes"
+git add README.md
+git commit -m "Update project documentation"
 git push origin test
 ```
 
-## 10. Дальнейшее развитие
+## 11. Дальнейшее развитие
 
-- Разработка минимального UI.
-- 10 функциональных UI-тестов.
-- 5 негативных UI-тестов.
-- 5 интеграционных и дополнительных проверок.
-- Развитие переиспользуемой тестовой архитектуры.
+- Самостоятельное написание Web UI тестов.
+- Подготовка мобильного UI для Android и iOS.
+- Самостоятельное написание мобильных тестов.
+- Реализация интеграционных проверок.
+- Подключение Selenium.
+- Развитие тестовой архитектуры.
 - Расширение CI/CD.
-- Подготовка к Web, Android и iOS автоматизации.
 
 ---
-
-Учебный проект для практики AQA и Java Automation Testing.

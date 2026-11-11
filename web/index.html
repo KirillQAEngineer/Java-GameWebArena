@@ -2,11 +2,208 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#171b2b">
+
     <title>Java RPG Arena</title>
+
+    <!-- Подключаем пиксельный шрифт с локальным системным fallback. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+
+    <!-- Подключаем стили игровой арены. -->
+    <link rel="stylesheet" href="/css/style.css">
+
+    <!-- Подключаем логику работы с персонажами. -->
+    <script src="/js/app.js" defer></script>
 </head>
 <body>
-    <h1>Java RPG Arena</h1>
-    <h2>Добро пожаловать на арену!</h2>
-    <button>Начать игру</button>
+    <div class="page-shell">
+
+        <!-- Верхняя панель с названием проекта и статусом. -->
+        <header class="topbar">
+            <a class="brand" href="/" aria-label="Java RPG Arena — главная">
+                <span class="brand-icon" aria-hidden="true">⚔</span>
+                <span>JAVA RPG ARENA</span>
+            </a>
+
+            <div class="server-status">
+                <span class="status-dot"></span>
+                <span>SERVER ONLINE</span>
+            </div>
+        </header>
+
+        <main>
+            <!-- Приветственная секция игровой арены. -->
+            <section class="hero-section">
+                <div class="hero-decoration" aria-hidden="true">✦</div>
+
+                <p class="eyebrow">WELCOME, ADVENTURER</p>
+
+                <h1>ВЫБЕРИ СВОЕГО ГЕРОЯ</h1>
+
+                <p class="hero-description">
+                    Собирай команду, улучшай характеристики и создавай собственных персонажей.
+                </p>
+
+                <div class="hero-divider">
+                    <span></span>
+                    <span class="divider-gem">◆</span>
+                    <span></span>
+                </div>
+            </section>
+
+            <!-- Основная область со списком персонажей. -->
+            <section class="arena-section">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">YOUR COLLECTION</p>
+                        <h2>АРЕНА ГЕРОЕВ</h2>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="refresh-button"
+                        class="pixel-button refresh-button"
+                        data-testid="refresh-button"
+                    >
+                        <span aria-hidden="true">↻</span>
+                        ОБНОВИТЬ
+                    </button>
+                </div>
+
+                <!-- Здесь JavaScript отображает карточки персонажей. -->
+                <div
+                    id="characters-list"
+                    class="characters-grid"
+                    data-testid="characters-list"
+                    aria-live="polite"
+                >
+                    <p class="empty-message">ЗАГРУЗКА ГЕРОЕВ...</p>
+                </div>
+            </section>
+
+            <!-- Панель создания и редактирования персонажа. -->
+            <section class="editor-section">
+                <div class="section-heading editor-heading">
+                    <div>
+                        <p class="eyebrow">CHARACTER WORKSHOP</p>
+                        <h2 id="form-title">СОЗДАТЬ ГЕРОЯ</h2>
+                    </div>
+
+                    <span class="workshop-icon" aria-hidden="true">⚒</span>
+                </div>
+
+                <form id="character-form" class="character-form" data-testid="character-form">
+                    <!-- Скрытое поле хранит ID при редактировании. -->
+                    <input type="hidden" id="character-id">
+
+                    <div class="form-grid">
+                        <div class="form-field form-field-wide">
+                            <label for="name">ИМЯ ПЕРСОНАЖА</label>
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                placeholder="Например, Paladin"
+                                maxlength="100"
+                                required
+                                data-testid="name-input"
+                            >
+                        </div>
+
+                        <div class="form-field">
+                            <label for="health">ЗДОРОВЬЕ (HP)</label>
+                            <input
+                                type="number"
+                                id="health"
+                                name="health"
+                                min="1"
+                                value="100"
+                                required
+                                data-testid="health-input"
+                            >
+                        </div>
+
+                        <div class="form-field">
+                            <label for="attack">АТАКА (ATK)</label>
+                            <input
+                                type="number"
+                                id="attack"
+                                name="attack"
+                                min="0"
+                                value="10"
+                                required
+                                data-testid="attack-input"
+                            >
+                        </div>
+
+                        <div class="form-field">
+                            <label for="experience">ОПЫТ (EXP)</label>
+                            <input
+                                type="number"
+                                id="experience"
+                                name="experience"
+                                min="0"
+                                value="0"
+                                required
+                                data-testid="experience-input"
+                            >
+                        </div>
+
+                        <div class="form-field">
+                            <label for="level">УРОВЕНЬ (LVL)</label>
+                            <input
+                                type="number"
+                                id="level"
+                                name="level"
+                                min="1"
+                                value="1"
+                                required
+                                data-testid="level-input"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button
+                            type="submit"
+                            id="submit-button"
+                            class="pixel-button primary-button"
+                            data-testid="submit-button"
+                        >
+                            + СОЗДАТЬ ПЕРСОНАЖА
+                        </button>
+
+                        <button
+                            type="button"
+                            id="cancel-button"
+                            class="pixel-button secondary-button"
+                            data-testid="cancel-button"
+                            hidden
+                        >
+                            ОТМЕНА
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Область сообщений об успешных и ошибочных операциях. -->
+            <div
+                id="notification"
+                class="notification"
+                data-testid="notification"
+                role="status"
+                aria-live="polite"
+            ></div>
+        </main>
+
+        <!-- Нижняя часть страницы. -->
+        <footer class="footer">
+            <span>JAVA RPG ARENA</span>
+            <span>BUILT FOR AQA PRACTICE</span>
+        </footer>
+    </div>
 </body>
 </html>

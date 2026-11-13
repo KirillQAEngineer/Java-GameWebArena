@@ -214,7 +214,8 @@ abstract class CharacterUiTestBase {
         assertTrue(refreshButton.isDisplayed());
 
         // Запрашиваем список персонажей повторно.
-        refreshButton.click();
+        // Прокручиваем кнопку в видимую область и нажимаем её.
+        clickElement(refreshButton);
 
         // Проверяем, что карточки снова отображаются.
         wait.until(ExpectedConditions.presenceOfElementLocated(
@@ -328,7 +329,13 @@ abstract class CharacterUiTestBase {
                 ExpectedConditions.visibilityOfElementLocated(cardByName(originalName))
         );
 
-        card.findElement(By.cssSelector("[data-testid='edit-button']")).click();
+        // Находим кнопку редактирования персонажа.
+        WebElement editButton = card.findElement(
+                By.cssSelector("[data-testid='edit-button']")
+        );
+
+        // Прокручиваем кнопку в видимую область и нажимаем её.
+        clickElement(editButton);
 
         String updatedName = originalName + "-Updated";
 
@@ -367,7 +374,13 @@ abstract class CharacterUiTestBase {
                 ExpectedConditions.visibilityOfElementLocated(cardLocator)
         );
 
-        card.findElement(By.cssSelector("[data-testid='delete-button']")).click();
+        // Находим кнопку удаления персонажа.
+        WebElement deleteButton = card.findElement(
+                By.cssSelector("[data-testid='delete-button']")
+        );
+
+        // Прокручиваем кнопку в видимую область и нажимаем её.
+        clickElement(deleteButton);
 
         // Подтверждаем удаление в диалоговом окне браузера.
         Alert alert = wait.until(ExpectedConditions.alertIsPresent());

@@ -85,6 +85,8 @@ Web UI и REST API обслуживаются одним Spring Boot прило�
 - Git и GitHub
 - GitHub Actions
 - Maven Surefire
+- Selenium WebDriver 4.52.0
+- ChromeDriver, GeckoDriver и SafariDriver через Selenium Manager
 
 ## 3. Архитектура проекта
 
@@ -139,8 +141,13 @@ Java-GameWebArena/
 │               │   ├── CharacterApiNegativeTest.java
 │               │   ├── CharacterApiIntegrationTest.java
 │               │   └── CharacterControllerTest.java
-│               └── service/
-│                   └── CharacterServiceTest.java
+│               ├── service/
+│               │   └── CharacterServiceTest.java
+│               └── ui/
+│                   ├── CharacterUiTestBase.java
+│                   ├── ChromeCharacterUiTest.java
+│                   ├── FirefoxCharacterUiTest.java
+│                   └── SafariCharacterUiTest.java
 ├── web/
 │   ├── index.html
 │   ├── css/
@@ -217,33 +224,37 @@ Java-GameWebArena/
 | Кнопка удаления | delete-button |
 | Уведомления | notification |
 
-Selenium и мобильные тестовые фреймворки пока не подключены.
+Web UI автоматизация реализована на Selenium WebDriver 4.52.0.
+Общие сценарии находятся в CharacterUiTestBase.java.
+Отдельные классы запускают 10 функциональных сценариев в Chrome, Firefox и Safari.
+Каждый браузер создаётся один раз на тестовый класс.
+
+Мобильные тестовые фреймворки Android и iOS пока не подключены.
 
 ## 7. План автоматизированного тестирования
 
-Целевой ориентир проекта — 80 автотестов.
+Целевой план — **104 выполнения автотестов**.
+Всего 74 уникальных сценария. Web UI сценарии выполняются в трёх браузерах.
 
-| Категория | Количество | Статус |
-|---|---:|---|
-| API CRUD | 14 | Готово |
-| API негативные сценарии и валидация | 10 | Готово |
-| UI функциональные | 10 | Самостоятельная разработка |
-| UI Android негативные | 5 | Самостоятельная разработка |
-| UI Android функциональные | 10 | Самостоятельная разработка |
-| UI iOS негативные | 5 | Самостоятельная разработка |
-| UI iOS функциональные | 10 | Самостоятельная разработка |
-| UI негативные | 5 | Самостоятельная разработка |
-| Интеграционные и дополнительные | 5 | Готово |
+| Категория | Сценарии | Выполнения | Статус |
+|---|---:|---:|---|
+| API CRUD | 14 | 14 | Готово |
+| API негативные сценарии и валидация | 10 | 10 | Готово |
+| Web UI функциональные (3 браузера) | 10 | 30 | Готово |
+| Web UI негативные (3 браузера) | 5 | 15 | Впереди |
+| Android UI негативные | 5 | 5 | Впереди |
+| Android UI функциональные | 10 | 10 | Впереди |
+| iOS UI негативные | 5 | 5 | Впереди |
+| iOS UI функциональные | 10 | 10 | Впереди |
+| Интеграционные и дополнительные | 5 | 5 | Готово |
+| **Итого** | **74** | **104** | |
 
-Сумма перечисленных категорий составляет 74 теста. Для достижения цели в 80 тестов необходимо дополнительно определить ещё 6 сценариев.
+### Текущий результат
 
-Текущий результат:
-- 29 тестов успешно проходят: API, модульные, контроллерные и интеграционные проверки.
-- Интеграционные сценарии проверяют совместную работу HTTP API, контроллера и сервиса.
-- Failures: 0.
-- Errors: 0.
-- Skipped: 0.
-- Web UI проверен вручную.
+- **59 успешных выполнений:** 29 API, unit, controller и integration;
+  30 Web UI — по 10 в Chrome, Firefox и Safari.
+- Последний подтверждённый запуск: Failures 0, Errors 0, Skipped 0.
+- Следующий этап: 5 негативных Web UI сценариев в трёх браузерах.
 
 ## 8. Локальный запуск
 
@@ -303,22 +314,19 @@ mvn clean test
 
 ## 9. CI/CD — GitHub Actions
 
-Workflow расположен в:
+Workflow расположен в `.github/workflows/maven-tests.yml`.
 
-`.github/workflows/maven-tests.yml`
-
-Он запускается при:
+Запуск:
 - Push в ветки test и master.
-- Создании или обновлении Pull Request в master.
+- Создание или обновление Pull Request в master.
 
-Основные этапы:
-1. Получение исходного кода.
-2. Установка Java 23 Temurin.
-3. Настройка Maven cache.
-4. Запуск `mvn -B clean test` в директории api.
-5. Проверка результата сборки.
+Задачи:
+1. API, unit и integration тесты — ubuntu-latest.
+2. Web UI Chrome и Firefox — ubuntu-latest, headless-режим.
+3. Web UI Safari — macos-latest с SafariDriver.
 
-Результаты доступны во вкладке Actions GitHub-репозитория.
+Каждая задача устанавливает Java 23 Temurin и использует Maven cache.
+Для Selenium-тестов приложение Spring Boot запускается на 127.0.0.1:8080.
 
 ## 10. Git workflow
 
@@ -346,7 +354,7 @@ git push origin test
 - Подготовка мобильного UI для Android и iOS.
 - Самостоятельное написание мобильных тестов.
 - Реализация интеграционных проверок.
-- Подключение Selenium.
+- Разработка негативных Web UI сценариев.
 - Развитие тестовой архитектуры.
 - Расширение CI/CD.
 

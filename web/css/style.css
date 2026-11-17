@@ -681,3 +681,214 @@ input:focus-visible {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
+
+/* =========================================================
+   13. Улучшенная мобильная адаптация для Android и iOS
+   ========================================================= */
+
+/* Предотвращаем горизонтальную прокрутку страницы. */
+html,
+body {
+    max-width: 100%;
+    overflow-x: clip;
+}
+
+/* Убираем задержку обработки касаний на интерактивных элементах. */
+button,
+input {
+    touch-action: manipulation;
+}
+
+/* Планшеты и смартфоны. */
+@media (max-width: 700px) {
+
+    /* Уменьшаем внешние отступы и используем всю ширину экрана. */
+    .page-shell {
+        width: calc(100% - 24px);
+        max-width: 540px;
+    }
+
+    /* Делаем верхнюю панель компактнее. */
+    .topbar {
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    /* Разрешаем длинным заголовкам переноситься. */
+    .brand {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    /* Уменьшаем вертикальные отступы приветственной секции. */
+    .hero-section {
+        padding-top: 38px;
+        padding-bottom: 28px;
+    }
+
+    /* Не допускаем выхода заголовка за границы экрана. */
+    .hero-section h1 {
+        max-width: 100%;
+        line-height: 1.7;
+        overflow-wrap: anywhere;
+    }
+
+    /* Делаем описание удобным для чтения на смартфоне. */
+    .hero-description {
+        font-size: 20px;
+        line-height: 1.35;
+    }
+
+    /* Размещаем карточки в одну колонку. */
+    .characters-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 18px;
+    }
+
+    /* Уменьшаем внутренние отступы карточек. */
+    .character-card {
+        min-width: 0;
+        padding: 16px;
+    }
+
+    /* Адаптируем заголовки карточек. */
+    .character-card h3 {
+        font-size: 12px;
+        overflow-wrap: anywhere;
+    }
+
+    /* Сохраняем четыре характеристики в компактной сетке. */
+    .character-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    /* Увеличиваем область нажатия кнопок управления. */
+    .card-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .card-actions button {
+        min-height: 48px;
+        padding: 10px;
+    }
+
+    /* Делаем поля формы удобными для сенсорного ввода. */
+    .form-field input {
+        min-height: 48px;
+        font-size: 16px;
+    }
+
+    /* Увеличиваем область нажатия основных кнопок. */
+    .pixel-button {
+        min-height: 48px;
+        padding: 12px;
+    }
+
+    /* Сохраняем читаемость нижней панели. */
+    .footer {
+        flex-wrap: wrap;
+        font-size: 15px;
+    }
+}
+
+/* Узкие смартфоны, включая небольшие iPhone и Android. */
+@media (max-width: 430px) {
+
+    /* Уменьшаем ширину боковых отступов. */
+    .page-shell {
+        width: calc(100% - 20px);
+    }
+
+    /* Компактно располагаем логотип и статус сервера. */
+    .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 14px 0;
+    }
+
+    .brand {
+        font-size: 9px;
+    }
+
+    .server-status {
+        font-size: 16px;
+    }
+
+    /* Уменьшаем заголовки секций. */
+    .section-heading h2 {
+        font-size: 12px;
+    }
+
+    /* Адаптируем панель создания персонажа. */
+    .editor-section {
+        padding: 15px;
+    }
+
+    /* Располагаем поля формы друг под другом. */
+    .form-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .form-field-wide {
+        grid-column: auto;
+    }
+
+    /* Располагаем кнопки формы вертикально. */
+    .form-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .form-actions button {
+        width: 100%;
+        min-height: 50px;
+    }
+
+    /* Уменьшаем портрет, чтобы он не занимал много места. */
+    .character-avatar {
+        width: 72px;
+        height: 72px;
+        flex-basis: 72px;
+    }
+
+    /* Оставляем кнопки карточки в одну колонку на узких экранах. */
+    .card-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .card-actions button {
+        width: 100%;
+        min-height: 48px;
+    }
+
+    /* Не допускаем переполнения длинных подписей. */
+    .character-class {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+
+    /* Располагаем нижнюю панель вертикально. */
+    .footer {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+}
+
+/* Учитываем системную настройку уменьшения анимации. */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}

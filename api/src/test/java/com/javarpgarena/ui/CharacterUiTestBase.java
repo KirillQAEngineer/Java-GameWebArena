@@ -403,4 +403,120 @@ abstract class CharacterUiTestBase {
                 "Удалённый персонаж не должен отображаться"
         );
     }
+
+    // 11. Проверяем, что браузер запрещает создание персонажа без имени.
+    @Test
+    void shouldRejectCharacterWithoutName() {
+        WebElement nameInput = driver.findElement(By.id("name"));
+
+        // Очищаем поле через JavaScript для совместимости с SafariDriver.
+        ((JavascriptExecutor) driver).executeScript(
+                "arguments[0].value = '';"
+                        + "arguments[0].dispatchEvent(new Event('input', { bubbles: true }));"
+                        + "arguments[0].dispatchEvent(new Event('change', { bubbles: true }));",
+                nameInput
+        );
+
+        WebElement submitButton = driver.findElement(By.id("submit-button"));
+        clickElement(submitButton);
+
+        // Проверяем, что поле имени не прошло HTML-валидацию.
+        assertFalse(
+                (Boolean) ((JavascriptExecutor) driver).executeScript(
+                        "return arguments[0].checkValidity();",
+                        nameInput
+                ),
+                "Пустое имя не должно проходить валидацию"
+        );
+
+        // Проверяем, что сервер не создал нового персонажа.
+        assertEquals(
+                "",
+                driver.findElement(By.id("notification")).getText(),
+                "Уведомление об успешном создании не должно появиться"
+        );
+    }
+
+    // 12. Проверяем отклонение имени, состоящего только из пробелов.
+    @Test
+    void shouldRejectCharacterWithBlankName() {
+        String invalidName = "   ";
+
+        fillField("name", invalidName);
+        fillField("health", "100");
+        fillField("attack", "10");
+        fillField("experience", "0");
+        fillField("level", "1");
+
+        clickElement(driver.findElement(By.id("submit-button")));
+
+        // JavaScript удаляет пробелы через trim(), после чего backend
+        // отклоняет пустое имя с ошибкой HTTP 400.
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(
+                By.id("notification"),
+                "HTTP 400"
+        ));
+
+        assertTrue(
+                driver.findElements(By.cssSelector("[data-testid='character-card']"))
+                        .stream()
+                        .noneMatch(card -> card.findElement(By.tagName("h3"))
+                                .getText().isEmpty()),
+                "Персонаж с пустым именем не должен появиться"
+        );
+    }
+
+    // 13. Проверяем запрет нулевого здоровья.
+    @Test
+    void shouldRejectCharacterWithZeroHealth() {
+        WebElement healthInput = driver.findElement(By.id("health"));
+        fillField("name", "InvalidHealthHero");
+        fillField("health", "0");
+
+        clickElement(driver.findElement(By.id("submit-button")));
+
+        assertFalse(
+                (Boolean) ((JavascriptExecutor) driver).executeScript(
+                        "return arguments[0].checkValidity();",
+                        healthInput
+                ),
+                "Здоровье 0 не должно проходить валидацию"
+        );
+    }
+
+    // 14. Проверяем запрет отрицательной атаки.
+    @Test
+    void shouldRejectCharacterWithNegativeAttack() {
+        WebElement attackInput = driver.findElement(By.id("attack"));
+        fillField("name", "InvalidAttackHero");
+        fillField("attack", "-1");
+
+        clickElement(driver.findElement(By.id("submit-button")));
+
+        assertFalse(
+                (Boolean) ((JavascriptExecutor) driver).executeScript(
+                        "return arguments[0].checkValidity();",
+                        attackInput
+                ),
+                "Отрицательная атака не должна проходить валидацию"
+        );
+    }
+
+    // 15. Проверяем запрет нулевого уровня.
+    @Test
+    void shouldRejectCharacterWithZeroLevel() {
+        WebElement levelInput = driver.findElement(By.id("level"));
+        fillField("name", "InvalidLevelHero");
+        fillField("level", "0");
+
+        clickElement(driver.findElement(By.id("submit-button")));
+
+        assertFalse(
+                (Boolean) ((JavascriptExecutor) driver).executeScript(
+                        "return arguments[0].checkValidity();",
+                        levelInput
+                ),
+                "Уровень 0 не должен проходить валидацию"
+        );
+    }
 }

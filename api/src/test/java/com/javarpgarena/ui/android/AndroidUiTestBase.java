@@ -61,7 +61,7 @@ abstract class AndroidUiTestBase {
         // Firefox использует проверенную конфигурацию Gecko.
         } else if (browser.equals("firefox")) {
             MutableCapabilities options = new MutableCapabilities();
-            options.setCapability("platformName", "mac");
+            options.setCapability("platformName", System.getProperty("os.name").toLowerCase().contains("mac") ? "mac" : "linux");
             options.setCapability("browserName", "firefox");
             options.setCapability("appium:automationName", "Gecko");
             options.setCapability("appium:androidStorage", "internal");

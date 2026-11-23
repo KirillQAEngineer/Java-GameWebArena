@@ -21,6 +21,8 @@ if [[ "$(adb get-state 2>/dev/null || true)" != "device" ]] || [[ "$(adb shell g
 fi
 
 adb shell pm path com.android.chrome
+# Отключаем Play Store на время тестов, чтобы исключить фоновые обновления приложений.
+adb shell pm disable-user --user 0 com.android.vending
 
 nohup appium --allow-insecure=uiautomator2:chromedriver_autodownload > "$ROOT_DIR/appium.log" 2>&1 &
 

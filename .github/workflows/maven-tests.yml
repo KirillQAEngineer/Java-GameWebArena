@@ -171,6 +171,13 @@ jobs:
           exit 1
         working-directory: api
 
+      # Включаем KVM для аппаратной виртуализации Android Emulator.
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       # Создаём Android Emulator с Android 14 и Google Play.
       - name: Run Android Chrome UI tests
         uses: reactivecircus/android-emulator-runner@v2

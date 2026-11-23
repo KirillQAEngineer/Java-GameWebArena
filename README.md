@@ -351,9 +351,18 @@ Workflow расположен в `.github/workflows/maven-tests.yml`.
 1. API, unit и integration тесты — ubuntu-latest.
 2. Web UI Chrome и Firefox — ubuntu-latest, headless-режим.
 3. Web UI Safari — macos-latest с SafariDriver.
+4. Android UI Chrome — ubuntu-latest с Android Emulator (API 34), Appium 3 и UiAutomator2.
 
 Каждая задача устанавливает Java 23 Temurin и использует Maven cache.
+
 Для Selenium-тестов приложение Spring Boot запускается на 127.0.0.1:8080.
+
+Android CI:
+- Запускает Android Emulator с Google Play и Chrome.
+- Запускает Appium Server с UiAutomator2.
+- Выполняет 15 тестов класса AndroidCharacterUiTest.
+- При ошибках сохраняет Appium log, Android logcat, Spring Boot log и Maven Surefire reports в GitHub Actions Artifacts.
+- Срок хранения диагностических файлов — 7 дней.
 
 ## 10. Git workflow
 
@@ -377,12 +386,12 @@ git push -u origin feature/branch-name
 
 ## 11. Дальнейшее развитие
 
-- Настройка Appium для мобильной автоматизации.
-- Разработка 10 функциональных Android UI сценариев.
-- Разработка 5 негативных Android UI сценариев.
+- Развитие мобильной автоматизации Android и iOS.
+- Разработка 10 функциональных Android Firefox UI сценариев.
+- Разработка 5 негативных Android Firefox UI сценариев.
 - Разработка 10 функциональных iOS UI сценариев.
 - Разработка 5 негативных iOS UI сценариев.
-- Подключение мобильных тестов к CI/CD, если инфраструктура позволит.
+- Подключение Android Firefox и iOS Safari тестов к CI/CD.
 - Развитие тестовой архитектуры и документации.
 
 ---

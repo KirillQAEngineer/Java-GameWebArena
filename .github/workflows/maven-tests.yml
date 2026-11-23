@@ -62,7 +62,7 @@ jobs:
       - name: Start Spring Boot application
         run: |
           nohup mvn -B spring-boot:run > app.log 2>&1 &
-          for attempt in {1..60}; do
+          for _ in {1..60}; do
             if curl --silent --fail http://127.0.0.1:8080/ > /dev/null; then
               exit 0
             fi
@@ -103,7 +103,7 @@ jobs:
       - name: Start Spring Boot application
         run: |
           nohup mvn -B spring-boot:run > app.log 2>&1 &
-          for attempt in {1..60}; do
+          for _ in {1..60}; do
             if curl --silent --fail http://127.0.0.1:8080/ > /dev/null; then
               exit 0
             fi
@@ -121,3 +121,116 @@ jobs:
         if: failure()
         run: cat app.log
         working-directory: api
+
+  # Отдельная задача для мобильных UI-тестов Android Chrome.
+  android-ui-tests:
+    # Используем Ubuntu runner с поддержкой Android Emulator.
+    runs-on: ubuntu-latest
+
+    # Ограничиваем максимальное время выполнения задачи.
+    timeout-minutes: 45
+
+    steps:
+      # Получаем исходный код репозитория.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Устанавливаем Java 23 и настраиваем Maven cache.
+      - name: Set up Java 23
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '23'
+          cache: maven
+
+      # Устанавливаем Node.js для запуска Appium 3.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Устанавливаем Appium Server версии 3.
+      - name: Install Appium 3
+        run: npm install --global appium@3
+
+      # Устанавливаем драйвер управления Android через UiAutomator2.
+      - name: Install UiAutomator2 driver
+        run: appium driver install uiautomator2
+
+      # Запускаем Spring Boot в фоновом режиме.
+      - name: Start Spring Boot application
+        run: |
+          nohup mvn -B spring-boot:run > app.log 2>&1 &
+          for _ in {1..60}; do
+            if curl --silent --fail http://127.0.0.1:8080/ > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat app.log
+          exit 1
+        working-directory: api
+
+      # Создаём Android Emulator с Android 14 и Google Play.
+      - name: Run Android Chrome UI tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis_playstore
+          arch: x86_64
+          profile: pixel_3a
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: |
+            set +e
+
+            # Проверяем наличие Chrome в Android Emulator.
+            if ! adb shell pm path com.android.chrome; then
+              echo "Chrome is not installed in the Android Emulator."
+              adb logcat -d > android-logcat.log
+              exit 1
+            fi
+
+            # Запускаем Appium Server с разрешением автоматической загрузки ChromeDriver.
+            nohup appium --allow-insecure=uiautomator2:chromedriver_autodownload > appium.log 2>&1 &
+
+            # Ожидаем готовности Appium Server.
+            for _ in {1..30}; do
+              if curl --silent --fail http://127.0.0.1:4723/status > /dev/null; then
+                break
+              fi
+              sleep 2
+            done
+
+            # Проверяем, что Appium действительно запустился.
+            if ! curl --silent --fail http://127.0.0.1:4723/status > /dev/null; then
+              cat appium.log
+              adb logcat -d > android-logcat.log
+              exit 1
+            fi
+
+            # Запускаем все 15 Android Chrome сценариев.
+            cd api
+            mvn -B -Dtest=AndroidCharacterUiTest test
+            test_status=$?
+
+            # Сохраняем системный журнал Android Emulator.
+            cd ..
+            adb logcat -d > android-logcat.log
+
+            # Возвращаем настоящий результат выполнения Maven-тестов.
+            exit $test_status
+
+      # Загружаем диагностические файлы, если задача завершилась ошибкой.
+      - name: Upload Android test diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-ui-test-diagnostics
+          path: |
+            appium.log
+            android-logcat.log
+            api/app.log
+            api/target/surefire-reports/
+          if-no-files-found: warn
+          retention-days: 7

@@ -64,7 +64,7 @@ abstract class AndroidUiTestBase {
             options.setCapability("platformName", System.getProperty("os.name").toLowerCase().contains("mac") ? "mac" : "linux");
             options.setCapability("browserName", "firefox");
             options.setCapability("appium:automationName", "Gecko");
-            options.setCapability("appium:androidStorage", "internal");
+            options.setCapability("appium:androidStorage", "sdcard");
             options.setCapability("moz:firefoxOptions", Map.of(
                     "androidIntentArguments", java.util.List.of(
                             "-a", "android.intent.action.VIEW",

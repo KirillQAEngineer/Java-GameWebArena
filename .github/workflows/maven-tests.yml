@@ -157,6 +157,14 @@ jobs:
       - name: Install UiAutomator2 driver
         run: appium driver install uiautomator2
 
+      # Устанавливаем Gecko для автоматизации Firefox на Android.
+      - name: Install Gecko driver
+        run: appium driver install gecko
+
+      # Скачиваем исполняемый файл GeckoDriver для управления Firefox.
+      - name: Install GeckoDriver binary
+        run: appium driver run gecko install-geckodriver
+
       # Запускаем Spring Boot в фоновом режиме.
       - name: Start Spring Boot application
         run: |

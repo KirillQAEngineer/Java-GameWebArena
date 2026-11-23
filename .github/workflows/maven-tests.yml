@@ -122,13 +122,18 @@ jobs:
         run: cat app.log
         working-directory: api
 
-  # Отдельная задача для мобильных UI-тестов Android Chrome.
+  # Запускаем Android Chrome и Firefox в отдельных matrix-прогонах.
   android-ui-tests:
-    # Используем Ubuntu runner с поддержкой Android Emulator.
     runs-on: ubuntu-latest
-
-    # Ограничиваем максимальное время выполнения задачи.
     timeout-minutes: 45
+
+    # Каждый браузер получает отдельную задачу и собственный эмулятор.
+    strategy:
+      fail-fast: false
+      matrix:
+        browser:
+          - chrome
+          - firefox
 
     steps:
       # Получаем исходный код репозитория.
@@ -157,12 +162,14 @@ jobs:
       - name: Install UiAutomator2 driver
         run: appium driver install uiautomator2
 
-      # Устанавливаем Gecko для автоматизации Firefox на Android.
+      # Устанавливаем Gecko только для Firefox-прогона.
       - name: Install Gecko driver
+        if: matrix.browser == 'firefox'
         run: appium driver install gecko
 
-      # Скачиваем исполняемый файл GeckoDriver для управления Firefox.
+      # Устанавливаем бинарный GeckoDriver только для Firefox.
       - name: Install GeckoDriver binary
+        if: matrix.browser == 'firefox'
         run: appium driver run gecko install-geckodriver
 
       # Запускаем Spring Boot в фоновом режиме.
@@ -186,8 +193,8 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      # Создаём Android Emulator с Android 14 и Google Play.
-      - name: Run Android Chrome UI tests
+      # Каждый matrix-прогон запускает собственный Android Emulator.
+      - name: Run Android UI tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -196,14 +203,14 @@ jobs:
           profile: pixel_3a
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: bash .github/scripts/android-ui-tests.sh
+          script: bash .github/scripts/android-ui-tests.sh ${{ matrix.browser }}
 
-      # Загружаем диагностические файлы, если задача завершилась ошибкой.
+      # Загружаем диагностические файлы при ошибке.
       - name: Upload Android test diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: android-ui-test-diagnostics
+          name: android-${{ matrix.browser }}-diagnostics
           path: |
             appium.log
             android-logcat.log

@@ -86,6 +86,10 @@ Web UI и REST API обслуживаются одним Spring Boot прило�
 - GitHub Actions
 - Maven Surefire
 - Selenium WebDriver 4.52.0
+- Appium Java Client 11.0.0
+- Appium 3
+- UiAutomator2
+- Android Emulator
 - ChromeDriver, GeckoDriver и SafariDriver через Selenium Manager
 
 ## 3. Архитектура проекта
@@ -147,7 +151,10 @@ Java-GameWebArena/
 │                   ├── CharacterUiTestBase.java
 │                   ├── ChromeCharacterUiTest.java
 │                   ├── FirefoxCharacterUiTest.java
-│                   └── SafariCharacterUiTest.java
+│                   ├── SafariCharacterUiTest.java
+│                   └── android/
+│                       ├── AndroidUiTestBase.java
+│                       └── AndroidCharacterUiTest.java
 ├── web/
 │   ├── index.html
 │   ├── css/
@@ -234,8 +241,7 @@ Web UI адаптирован для мобильных экранов: карт
 
 ## 7. План автоматизированного тестирования
 
-Целевой план — **104 выполнения автотестов**.
-Всего 74 уникальных сценария. Web UI сценарии выполняются в трёх браузерах.
+Целевой план — **119 выполнений автотестов** и 74 уникальных сценария.
 
 | Категория | Сценарии | Выполнения | Статус |
 |---|---:|---:|---|
@@ -243,19 +249,39 @@ Web UI адаптирован для мобильных экранов: карт
 | API негативные сценарии и валидация | 10 | 10 | Готово |
 | Web UI функциональные (3 браузера) | 10 | 30 | Готово |
 | Web UI негативные (3 браузера) | 5 | 15 | Готово |
-| Android UI негативные | 5 | 5 | Впереди |
-| Android UI функциональные | 10 | 10 | Впереди |
-| iOS UI негативные | 5 | 5 | Впереди |
+| Android UI функциональные (2 браузера) | 10 | 20 | Chrome готово, Firefox впереди |
+| Android UI негативные (2 браузера) | 5 | 10 | Chrome готово, Firefox впереди |
 | iOS UI функциональные | 10 | 10 | Впереди |
+| iOS UI негативные | 5 | 5 | Впереди |
 | Интеграционные и дополнительные | 5 | 5 | Готово |
-| **Итого** | **74** | **104** | |
+| **Итого** | **74** | **119** | |
 
 ### Текущий результат
 
-- **74 успешных выполнения:** 29 API, unit, controller и integration;
-  45 Web UI — 15 сценариев в Chrome, Firefox и Safari.
-- Последний подтверждённый запуск: Failures 0, Errors 0, Skipped 0.
-- Следующий этап: настройка Appium и разработка Android UI автотестов.
+- **89 успешных выполнений:**
+  - 29 API, unit, controller и integration;
+  - 45 Web UI — 15 сценариев в Chrome, Firefox и Safari;
+  - 15 Android UI — 10 функциональных и 5 негативных сценариев в Chrome.
+- Android Chrome: 15 тестов, Failures 0, Errors 0, Skipped 0.
+- Следующий этап: Android Firefox, затем iOS Safari.
+
+### Запуск Android UI автотестов
+
+Для локального запуска необходимы Java 23, Maven, Node.js, Appium 3, Android SDK command-line tools, эмулятор Android и установленный UiAutomator2 driver.
+
+Терминал №1 — запуск Spring Boot из корня проекта:
+
+`cd api && mvn -B spring-boot:run`
+
+Терминал №2 — запуск Appium Server:
+
+`appium --allow-insecure=uiautomator2:chromedriver_autodownload`
+
+Терминал №3 — запуск Android UI тестов:
+
+`cd api && mvn -B -Dtest=AndroidCharacterUiTest test`
+
+Для эмулятора используется адрес приложения `http://10.0.2.2:8080`. Он позволяет Android Emulator обращаться к серверу, запущенному на компьютере.
 
 ## 8. Локальный запуск
 

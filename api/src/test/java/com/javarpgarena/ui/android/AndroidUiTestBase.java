@@ -10,45 +10,84 @@ import org.junit.jupiter.api.TestInstance;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.MutableCapabilities;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
 import java.net.URI;
 import java.time.Duration;
+import java.util.Map;
 import java.util.UUID;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AndroidUiTestBase {
 
-    // Драйвер управляет браузером Chrome внутри Android Emulator.
-    protected AndroidDriver driver;
+    // Общий интерфейс Selenium для Chrome и Firefox.
+    protected WebDriver driver;
 
-    // Объект ожидания помогает дождаться загрузки элементов страницы.
+    // Ожидание появления элементов страницы.
     protected WebDriverWait wait;
 
-    // Адрес приложения на компьютере, доступный из Android Emulator.
+    // Адрес приложения, доступный из Android Emulator.
     protected static final String BASE_URL = "http://10.0.2.2:8080";
 
     // ID персонажа, созданного текущим тестом.
     protected String createdCharacterId;
 
-    // Создаём Appium-сессию один раз перед запуском тестового класса.
+    // Выбираем браузер через параметр Maven -Dandroid.browser.
     @BeforeAll
     void setUpAndroid() throws Exception {
-        UiAutomator2Options options = new UiAutomator2Options();
-        options.setPlatformName("Android");
-        options.setAutomationName("UiAutomator2");
-        options.setDeviceName("Android Emulator");
-        options.setCapability("browserName", "Chrome");
-        options.setCapability("appium:chromedriverAutodownload", true);
+        String browser = System.getProperty("android.browser", "chrome")
+                .trim()
+                .toLowerCase();
 
-        // Подключаемся к локальному Appium Server.
-        driver = new AndroidDriver(
-                URI.create("http://127.0.0.1:4723").toURL(),
-                options
-        );
+        // Chrome использует драйвер UiAutomator2.
+        if (browser.equals("chrome")) {
+            UiAutomator2Options options = new UiAutomator2Options();
+            options.setPlatformName("Android");
+            options.setAutomationName("UiAutomator2");
+            options.setDeviceName("Android Emulator");
+            options.setCapability("browserName", "Chrome");
+            options.setCapability("appium:chromedriverAutodownload", true);
 
-        // Устанавливаем максимальное время ожидания элементов — 15 секунд.
+            driver = new AndroidDriver(
+                    URI.create("http://127.0.0.1:4723").toURL(),
+                    options
+            );
+
+        // Firefox использует проверенную конфигурацию Gecko.
+        } else if (browser.equals("firefox")) {
+            MutableCapabilities options = new MutableCapabilities();
+            options.setCapability("platformName", "mac");
+            options.setCapability("browserName", "firefox");
+            options.setCapability("appium:automationName", "Gecko");
+            options.setCapability("appium:androidStorage", "internal");
+            options.setCapability("moz:firefoxOptions", Map.of(
+                    "androidIntentArguments", java.util.List.of(
+                            "-a", "android.intent.action.VIEW",
+                            "-d", "about:blank",
+                            "--ez", "automationtest", "true"
+                    ),
+                    "androidPackage", "org.mozilla.firefox",
+                    "androidDeviceSerial", "emulator-5554"
+            ));
+
+            driver = new RemoteWebDriver(
+                    URI.create("http://127.0.0.1:4723").toURL(),
+                    options
+            );
+
+        } else {
+            throw new IllegalArgumentException(
+                    "Неизвестный Android-браузер: " + browser
+                            + ". Допустимые значения: chrome, firefox"
+            );
+        }
+
+        // Максимальное ожидание элементов — 15 секунд.
         wait = new WebDriverWait(driver, Duration.ofSeconds(15));
     }
 
@@ -58,30 +97,29 @@ abstract class AndroidUiTestBase {
         createdCharacterId = null;
         driver.get(BASE_URL);
 
-        // Отключаем плавную прокрутку только в Android-тестах.
+        // Отключаем плавную прокрутку.
         ((JavascriptExecutor) driver).executeScript(
                 "document.documentElement.style.scrollBehavior = 'auto';"
         );
 
-        // Ждём появления карточек персонажей перед началом теста.
+        // Ждём появления карточек персонажей.
         wait.until(ExpectedConditions.presenceOfElementLocated(
                 By.cssSelector("[data-testid=\"character-card\"]")
         ));
     }
 
-    // После каждого теста удаляем персонажа, созданного этим тестом.
+    // Удаляем персонажа, созданного тестом.
     @AfterEach
     void cleanUpAfterTest() {
         if (createdCharacterId == null) {
             return;
         }
 
-        // Находим карточку по сохранённому ID персонажа.
+        // Ищем карточку по ID.
         By characterCard = By.cssSelector(
                 "[data-testid=\"character-card\"][data-character-id=\"" + createdCharacterId + "\"]"
         );
 
-        // Если карточка существует, запускаем её удаление.
         if (!driver.findElements(characterCard).isEmpty()) {
             WebElement card = driver.findElement(characterCard);
             WebElement deleteButton = card.findElement(
@@ -90,19 +128,18 @@ abstract class AndroidUiTestBase {
 
             clickElement(deleteButton);
 
-            // Подтверждаем удаление во всплывающем окне браузера.
+            // Подтверждаем удаление.
             Alert alert = wait.until(ExpectedConditions.alertIsPresent());
             alert.accept();
 
-            // Ждём, пока удалённая карточка исчезнет со страницы.
+            // Ждём исчезновения карточки.
             wait.until(ExpectedConditions.invisibilityOfElementLocated(characterCard));
         }
 
-        // Очищаем ID после завершения процедуры.
         createdCharacterId = null;
     }
 
-    // Закрываем Appium-сессию после завершения всех тестов класса.
+    // Закрываем браузер после всех тестов класса.
     @AfterAll
     void tearDownAndroid() {
         if (driver != null) {
@@ -110,38 +147,44 @@ abstract class AndroidUiTestBase {
         }
     }
 
-    // Заполняем поле формы с прокруткой к нужному элементу.
+    // Заполняем поле формы.
     protected void fillField(String fieldId, String value) {
         WebElement field = driver.findElement(By.id(fieldId));
+
         ((JavascriptExecutor) driver).executeScript(
-                "arguments[0].scrollIntoView({block: \"center\"});", field
+                "arguments[0].scrollIntoView({block: 'center'});",
+                field
         );
+
         field.clear();
         field.sendKeys(value);
     }
 
-    // Прокручиваем страницу к элементу и выполняем пользовательское нажатие.
-    // Прокручиваем страницу к элементу и выполняем обычный клик Selenium.
+    // Прокручиваем страницу и нажимаем элемент.
     protected void clickElement(WebElement element) {
-        // Закрываем виртуальную клавиатуру, если она открыта.
-        try {
-            if (driver.isKeyboardShown()) {
-                driver.hideKeyboard();
+
+        // Закрываем клавиатуру, если используется Android Chrome.
+        if (driver instanceof AndroidDriver androidDriver) {
+            try {
+                if (androidDriver.isKeyboardShown()) {
+                    androidDriver.hideKeyboard();
+                }
+            } catch (Exception ignored) {
+                // Продолжаем, если клавиатура уже закрыта.
             }
-        } catch (Exception ignored) {
-            // Продолжаем, если клавиатура уже закрыта.
         }
 
-        // Мгновенно размещаем элемент в центре экрана.
+        // Прокручиваем элемент в центр экрана.
         ((JavascriptExecutor) driver).executeScript(
-                "arguments[0].scrollIntoView({block: 'center', inline: 'nearest', behavior: 'auto'});", element
+                "arguments[0].scrollIntoView({block: 'center', inline: 'nearest', behavior: 'auto'});",
+                element
         );
 
-        // Ждём доступности элемента и выполняем обычный клик.
+        // Ждём доступности элемента и нажимаем.
         wait.until(ExpectedConditions.elementToBeClickable(element)).click();
     }
 
-    // Создаём уникального тестового персонажа и сохраняем его ID для очистки.
+    // Создаём уникального персонажа.
     protected String createTestCharacter() {
         String characterName = "AndroidTest-" + UUID.randomUUID();
 
@@ -153,35 +196,41 @@ abstract class AndroidUiTestBase {
 
         clickElement(driver.findElement(By.id("submit-button")));
 
-        // Ждём уведомления об успешном создании персонажа.
+        // Ждём уведомления об успешном создании.
         wait.until(ExpectedConditions.textToBePresentInElementLocated(
                 By.id("notification"), "Персонаж успешно создан."
         ));
 
-        // Находим созданную карточку и сохраняем её ID.
+        // Находим карточку нового персонажа.
         WebElement card = wait.until(currentDriver -> {
             for (WebElement item : currentDriver.findElements(
                     By.cssSelector("[data-testid=\"character-card\"]"))) {
                 WebElement heading = item.findElement(By.tagName("h3"));
+
                 if (heading.getText().equals(characterName)) {
                     return item;
                 }
             }
+
             return null;
         });
 
+        // Сохраняем ID для последующей очистки.
         createdCharacterId = card.getAttribute("data-character-id");
+
         return characterName;
     }
 
-    // Находим карточку персонажа по отображаемому имени.
+    // Ищем карточку по имени персонажа.
     protected WebElement cardByName(String name) {
         for (WebElement card : driver.findElements(
                 By.cssSelector("[data-testid=\"character-card\"]"))) {
+
             if (card.findElement(By.tagName("h3")).getText().equals(name)) {
                 return card;
             }
         }
+
         throw new AssertionError("Карточка персонажа не найдена: " + name);
     }
 }

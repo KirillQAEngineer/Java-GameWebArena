@@ -122,12 +122,9 @@ jobs:
         run: cat app.log
         working-directory: api
 
-  # Отдельная задача для мобильных UI-тестов Android Chrome.
+  # Запускаем Android UI-тесты только в Chrome.
   android-ui-tests:
-    # Используем Ubuntu runner с поддержкой Android Emulator.
     runs-on: ubuntu-latest
-
-    # Ограничиваем максимальное время выполнения задачи.
     timeout-minutes: 45
 
     steps:
@@ -178,8 +175,8 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      # Создаём Android Emulator с Android 14 и Google Play.
-      - name: Run Android Chrome UI tests
+      # Запускаем Android Emulator для Chrome UI-тестов.
+      - name: Run Android UI tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -188,14 +185,14 @@ jobs:
           profile: pixel_3a
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: bash .github/scripts/android-ui-tests.sh
+          script: bash .github/scripts/android-ui-tests.sh chrome
 
-      # Загружаем диагностические файлы, если задача завершилась ошибкой.
+      # Загружаем диагностические файлы при ошибке.
       - name: Upload Android test diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: android-ui-test-diagnostics
+          name: android-chrome-diagnostics
           path: |
             appium.log
             android-logcat.log

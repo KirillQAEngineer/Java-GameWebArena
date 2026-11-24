@@ -48,6 +48,12 @@ abstract class IosUiTestBase {
         options.setPlatformName("iOS");
         options.setAutomationName("XCUITest");
 
+        // Включаем подробный лог сборки WebDriverAgent для диагностики CI.
+        options.setCapability("appium:showXcodeLog", true);
+
+        // Даём WebDriverAgent до трёх минут на запуск в CI.
+        options.setCapability("appium:wdaLaunchTimeout", 180000);
+
         // Настройки устройства можно переопределить переменными CI.
         options.setDeviceName(System.getenv().getOrDefault(
                 "IOS_DEVICE_NAME", "iPhone 16"

@@ -204,7 +204,7 @@ jobs:
   # Запускаем iOS Safari UI-тесты на iPhone Simulator.
   ios-ui-tests:
     name: iOS Safari UI Tests
-    runs-on: macos-26
+    runs-on: macos-26-intel
     timeout-minutes: 60
 
     steps:

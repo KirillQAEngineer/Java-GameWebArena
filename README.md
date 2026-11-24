@@ -228,3 +228,5 @@ iOS job устанавливает Appium 3.7.0 и XCUITest driver 12.12.4, за
 ## Текущий статус проекта
 
 Реализованы API, Web UI, Android Chrome и iOS Safari автотесты. Всего 74 уникальных сценария и 104 выполнения с учётом трёх браузеров для Web UI.
+
+iOS CI runner: macOS 26 Intel (macos-26-intel), Xcode 26.6, iPhone 17 Simulator with iOS 26.5.

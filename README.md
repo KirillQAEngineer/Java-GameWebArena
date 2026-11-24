@@ -1,397 +1,164 @@
-# Java-GameWebArena
+# Java Game Web Arena
 
-# ПУБЛИЧНЫЙ ДОСТУП К ПРОЕКТУ
+Учебный Java AQA проект для автоматизации REST API, Web UI, Android Chrome и iOS Safari.
 
-## Демонстрационная ссылка
+## Технологии
 
-https://assessment-moment-bargain-extension.trycloudflare.com
-
-Бесплатный Cloudflare Quick Tunnel. Ссылка временная и может измениться после перезапуска туннеля. При изменении адреса обновите документацию.
-
-## Запуск публичного доступа
-
-Терминал 1 — Spring Boot:
-
-```bash
-cd ~/Projects/Java-GameWebArena/api
-mvn spring-boot:run
-```
-
-Терминал 2 — Cloudflare Tunnel:
-
-```bash
-cloudflared tunnel --url http://127.0.0.1:8080
-```
-
-Оба процесса должны оставаться запущенными. Используйте актуальную HTTPS-ссылку из вывода Cloudflare.
-
-## Остановка
-
-Нажмите Ctrl+C в обоих терминалах.
-
-## Ограничения и безопасность
-
-MacBook должен оставаться включённым и подключённым к интернету. При остановке приложения, туннеля или переходе компьютера в сон сайт станет недоступен.
-
-Quick Tunnel бесплатный, временный и не гарантирует круглосуточную доступность.
-
-Приложение слушает только 127.0.0.1:8080. Открывать порт 8080 на роутере не требуется.
-
-REST API пока не защищён авторизацией. Любой пользователь с публичной ссылкой может читать, создавать, изменять и удалять демонстрационные данные. Не размещайте персональную или конфиденциальную информацию.
-
-Для постоянной публикации потребуются облачный хостинг и защита API.
-
----
-
-
-Учебный проект AQA на Java для практики автоматизации Web, Android и iOS.
-
-## 1. Назначение проекта
-
-Java-GameWebArena — игровое приложение с REST API и Web UI для самостоятельной разработки и запуска автотестов.
-
-Основные задачи:
-- Практика Java Automation Testing.
-- Изучение REST API и HTTP.
-- Практика Web UI Automation.
-- Подготовка основы для Android и iOS Automation.
-- Изучение Maven, Git, GitHub и CI/CD.
-
-Web UI и REST API обслуживаются одним Spring Boot приложением. Отдельный frontend-сервер не требуется.
-
-## 2. Технологический стек
-
-### Backend
 - Java 23
 - Spring Boot 4.1.1
-- Spring MVC
-- Bean Validation
 - Maven
-
-### Автоматизированное тестирование
 - JUnit 5
-- Spring Boot Test
-- MockMvc
 - REST Assured 6.2.0
-- Mockito
-
-### Frontend
-- HTML5
-- CSS3
-- JavaScript
-- SVG
-
-### Инструменты
-- Git и GitHub
-- GitHub Actions
-- Maven Surefire
-- Selenium WebDriver 4.52.0
+- Selenium 4.52.0
 - Appium Java Client 11.0.0
 - Appium 3
 - UiAutomator2
-- Android Emulator
-- ChromeDriver, GeckoDriver и SafariDriver через Selenium Manager
+- HTML, CSS, JavaScript, SVG
+- GitHub Actions
 
-## 3. Архитектура проекта
+## Архитектура
 
-Backend построен по трёхслойной архитектуре:
+- Model: Character.java — модель персонажа.
+- Controller: CharacterController.java — REST API.
+- Service: CharacterService.java — бизнес-логика.
+- Данные хранятся в LinkedHashMap в памяти и сбрасываются при перезапуске.
+- Frontend находится в web/ и публикуется через Spring Boot.
 
-- Model — Character.java: модель персонажа и валидация.
-- Controller — CharacterController.java: обработка HTTP-запросов.
-- Service — CharacterService.java: бизнес-логика и управление персонажами.
-
-Данные хранятся в LinkedHashMap в оперативной памяти. После перезапуска приложения изменения теряются.
-
-Frontend:
-- web/index.html — структура страницы.
-- web/css/style.css — оформление и адаптация.
-- web/js/app.js — взаимодействие с REST API.
-- web/assets/characters/ — SVG-портреты персонажей.
-
-Папка web подключена к Maven-ресурсам и публикуется как статические ресурсы Spring Boot.
-
-### Схема взаимодействия
-
-Браузер → Spring Boot → CharacterController → CharacterService → Character.
-
-Frontend получает данные через REST API и отображает персонажей.
-
-## 4. Структура проекта
+## Структура проекта
 
 ```text
 Java-GameWebArena/
 ├── .github/
-│   └── workflows/
-│       └── maven-tests.yml
+│   ├── scripts/android-ui-tests.sh
+│   └── workflows/maven-tests.yml
 ├── api/
 │   ├── pom.xml
 │   └── src/
-│       ├── main/
-│       │   ├── java/
-│       │   │   ├── Main.java
-│       │   │   └── com/javarpgarena/
-│       │   │       ├── JavaRpgArenaApplication.java
-│       │   │       ├── controller/
-│       │   │       │   └── CharacterController.java
-│       │   │       ├── model/
-│       │   │       │   └── Character.java
-│       │   │       └── service/
-│       │   │           └── CharacterService.java
-│       │   └── resources/
-│       └── test/
-│           └── java/com/javarpgarena/
-│               ├── controller/
-│               │   ├── CharacterApiTest.java
-│               │   ├── CharacterApiNegativeTest.java
-│               │   ├── CharacterApiIntegrationTest.java
-│               │   └── CharacterControllerTest.java
-│               ├── service/
-│               │   └── CharacterServiceTest.java
-│               └── ui/
-│                   ├── CharacterUiTestBase.java
-│                   ├── ChromeCharacterUiTest.java
-│                   ├── FirefoxCharacterUiTest.java
-│                   ├── SafariCharacterUiTest.java
-│                   └── android/
-│                       ├── AndroidUiTestBase.java
-│                       └── AndroidCharacterUiTest.java
+│       ├── main/java/com/javarpgarena/
+│       │   ├── controller/CharacterController.java
+│       │   ├── model/Character.java
+│       │   └── service/CharacterService.java
+│       └── test/java/com/javarpgarena/
+│           ├── controller/
+│           ├── service/
+│           └── ui/
 ├── web/
-│   ├── index.html
-│   ├── css/
-│   │   └── style.css
-│   ├── js/
-│   │   └── app.js
-│   └── assets/
-│       └── characters/
-│           ├── adventurer.svg
-│           ├── mage.svg
-│           └── warrior.svg
+│   ├── assets/characters/
+│   ├── css/style.css
+│   ├── js/app.js
+│   └── index.html
 └── README.md
 ```
 
-## 5. REST API
+## REST API
 
-Базовый адрес: `http://localhost:8080/api/characters`
+Базовый адрес: http://localhost:8080/api/characters
 
-| Метод | Endpoint | Назначение | Ответ |
-|---|---|---|---|
-| GET | `/api/characters` | Получить всех персонажей | 200 |
-| GET | `/api/characters/{id}` | Получить персонажа | 200 |
-| POST | `/api/characters` | Создать персонажа | 201 |
-| PUT | `/api/characters/{id}` | Обновить персонажа | 200 |
-| DELETE | `/api/characters/{id}` | Удалить персонажа | 204 |
+- GET — получение персонажей.
+- POST — создание персонажа.
+- PUT — изменение персонажа.
+- DELETE — удаление персонажа.
+- 400 — ошибка валидации.
+- 404 — персонаж не найден.
 
-Дополнительные ответы:
-- 400 Bad Request — ошибка валидации.
-- 404 Not Found — персонаж не найден.
+## Web UI
 
-### Начальные данные
+Адрес: http://localhost:8080
 
-| ID | Имя | Здоровье | Атака | Опыт | Уровень |
-|---:|---|---:|---:|---:|---:|
-| 1 | Warrior | 100 | 20 | 0 | 1 |
-| 2 | Mage | 70 | 35 | 0 | 1 |
+Браузеры: Chrome, Firefox, Safari.
 
-Валидация модели:
-- name — не должен быть пустым.
-- health — минимум 1.
-- attack — минимум 0.
-- experience — минимум 0.
-- level — минимум 1.
+## Матрица автотестов
 
-## 6. Web UI
-
-Интерфейс выполнен в стилистике Pixel Art RPG.
-
-Функциональность:
-- Просмотр персонажей.
-- Создание персонажа.
-- Редактирование характеристик.
-- Удаление персонажа.
-- Обновление списка.
-- Отображение HP, ATK, EXP и LVL.
-- Полосы здоровья и опыта.
-
-### Селекторы для UI Automation
-
-| Элемент | data-testid |
-|---|---|
-| Список персонажей | characters-list |
-| Карточка персонажа | character-card |
-| Кнопка обновления | refresh-button |
-| Форма | character-form |
-| Поле имени | name-input |
-| Поле здоровья | health-input |
-| Поле атаки | attack-input |
-| Поле опыта | experience-input |
-| Поле уровня | level-input |
-| Кнопка сохранения | submit-button |
-| Кнопка отмены | cancel-button |
-| Кнопка редактирования | edit-button |
-| Кнопка удаления | delete-button |
-| Уведомления | notification |
-
-Web UI автоматизация реализована на Selenium WebDriver 4.52.0.
-Общие сценарии находятся в CharacterUiTestBase.java.
-Отдельные классы запускают 10 функциональных и 5 негативных сценариев в Chrome, Firefox и Safari (45 выполнений).
-Каждый браузер создаётся один раз на тестовый класс.
-
-Web UI адаптирован для мобильных экранов: карточки, формы и кнопки перестраиваются под узкие разрешения.
-Мобильная автоматизация будет выполняться через Appium: Android Chrome и iOS Safari. Нативные приложения не разрабатываются.
-
-## 7. План автоматизированного тестирования
-
-Целевой план — **119 выполнений автотестов** и 74 уникальных сценария.
-
-| Категория | Сценарии | Выполнения | Статус |
+| Направление | Сценарии | Выполнения | Статус |
 |---|---:|---:|---|
 | API CRUD | 14 | 14 | Готово |
-| API негативные сценарии и валидация | 10 | 10 | Готово |
-| Web UI функциональные (3 браузера) | 10 | 30 | Готово |
-| Web UI негативные (3 браузера) | 5 | 15 | Готово |
-| Android UI функциональные (2 браузера) | 10 | 20 | Chrome готово, Firefox впереди |
-| Android UI негативные (2 браузера) | 5 | 10 | Chrome готово, Firefox впереди |
-| iOS UI функциональные | 10 | 10 | Впереди |
-| iOS UI негативные | 5 | 5 | Впереди |
-| Интеграционные и дополнительные | 5 | 5 | Готово |
-| **Итого** | **74** | **119** | |
+| API negative | 10 | 10 | Готово |
+| Web functional | 10 | 30 | Готово |
+| Web negative | 5 | 15 | Готово |
+| Android Chrome functional | 10 | 10 | Готово |
+| Android Chrome negative | 5 | 5 | Готово |
+| iOS Safari functional | 10 | 10 | Запланировано |
+| iOS Safari negative | 5 | 5 | Запланировано |
+| Integration и additional | 5 | 5 | Готово |
+| Итого | 74 | 104 | |
 
-### Текущий результат
+Текущий подтверждённый результат: 89 выполнений — 29 API/unit/integration, 45 Web UI, 15 Android Chrome UI.
 
-- **89 успешных выполнений:**
-  - 29 API, unit, controller и integration;
-  - 45 Web UI — 15 сценариев в Chrome, Firefox и Safari;
-  - 15 Android UI — 10 функциональных и 5 негативных сценариев в Chrome.
-- Android Chrome: 15 тестов, Failures 0, Errors 0, Skipped 0.
-- Следующий этап: Android Firefox, затем iOS Safari.
+## Локальный запуск
 
-### Запуск Android UI автотестов
-
-Для локального запуска необходимы Java 23, Maven, Node.js, Appium 3, Android SDK command-line tools, эмулятор Android и установленный UiAutomator2 driver.
-
-Терминал №1 — запуск Spring Boot из корня проекта:
-
-`cd api && mvn -B spring-boot:run`
-
-Терминал №2 — запуск Appium Server:
-
-`appium --allow-insecure=uiautomator2:chromedriver_autodownload`
-
-Терминал №3 — запуск Android UI тестов:
-
-`cd api && mvn -B -Dtest=AndroidCharacterUiTest test`
-
-Для эмулятора используется адрес приложения `http://10.0.2.2:8080`. Он позволяет Android Emulator обращаться к серверу, запущенному на компьютере.
-
-## 8. Локальный запуск
-
-Требования:
-- Java 23.
-- Maven.
-- Git.
-
-### Проверка версий
-
-```bash
-java -version
-mvn -version
-git --version
-```
-
-### Запуск приложения
-
-Из корня проекта:
+Требования: JDK 23 и Maven.
 
 ```bash
 cd api
-mvn spring-boot:run
+mvn -B spring-boot:run
 ```
 
-Приложение будет доступно по адресам:
+Web UI: http://localhost:8080
 
-- Web UI: http://localhost:8080/
-- REST API: http://localhost:8080/api/characters
+API: http://localhost:8080/api/characters
 
-Для остановки приложения нажмите Ctrl+C в терминале.
-
-### Проверка API
-
-```bash
-curl http://localhost:8080/api/characters
-```
-
-### Проверка Web UI
-
-Откройте в браузере:
-
-http://localhost:8080/
-
-### Запуск тестов
-
-Из корня проекта:
+Запуск тестов:
 
 ```bash
 cd api
-mvn clean test
+mvn -B clean test
 ```
 
-- clean удаляет предыдущие результаты сборки.
-- test компилирует и запускает автоматизированные тесты.
-- Maven Surefire формирует отчёты в target/surefire-reports/.
+## Android Chrome
 
-## 9. CI/CD — GitHub Actions
+Требуются Android SDK, Android Emulator, Node.js, Appium 3 и UiAutomator2.
 
-Workflow расположен в `.github/workflows/maven-tests.yml`.
-
-Запуск:
-- Push в ветки test и master.
-- Создание или обновление Pull Request в master.
-
-Задачи:
-1. API, unit и integration тесты — ubuntu-latest.
-2. Web UI Chrome и Firefox — ubuntu-latest, headless-режим.
-3. Web UI Safari — macos-latest с SafariDriver.
-4. Android UI Chrome — ubuntu-latest с Android Emulator (API 34), Appium 3 и UiAutomator2.
-
-Каждая задача устанавливает Java 23 Temurin и использует Maven cache.
-
-Для Selenium-тестов приложение Spring Boot запускается на 127.0.0.1:8080.
-
-Android CI:
-- Запускает Android Emulator с Google Play и Chrome.
-- Запускает Appium Server с UiAutomator2.
-- Выполняет 15 тестов класса AndroidCharacterUiTest.
-- При ошибках сохраняет Appium log, Android logcat, Spring Boot log и Maven Surefire reports в GitHub Actions Artifacts.
-- Срок хранения диагностических файлов — 7 дней.
-
-## 10. Git workflow
-
-- Основная ветка: master.
-- Для каждого этапа создаётся отдельная feature-ветка от master.
-- Разработка и тестирование выполняются в feature-ветке.
-- Перед публикацией запускаются соответствующие тесты.
-- Документация обновляется вместе с кодом.
-- Изменения коммитятся и отправляются в GitHub.
-- Для завершения этапа создаётся Pull Request в master.
-- Merge выполняется после проверки успешности тестов.
-
-Пример публикации изменений:
+Запуск приложения:
 
 ```bash
-git status
-git add README.md
-git commit -m "Update project documentation"
-git push -u origin feature/branch-name
+cd api
+mvn -B spring-boot:run
 ```
 
-## 11. Дальнейшее развитие
+В другом терминале:
 
-- Развитие мобильной автоматизации Android и iOS.
-- Разработка 10 функциональных Android Firefox UI сценариев.
-- Разработка 5 негативных Android Firefox UI сценариев.
-- Разработка 10 функциональных iOS UI сценариев.
-- Разработка 5 негативных iOS UI сценариев.
-- Подключение Android Firefox и iOS Safari тестов к CI/CD.
-- Развитие тестовой архитектуры и документации.
+```bash
+appium --allow-insecure=uiautomator2:chromedriver
+```
 
----
+Запуск Android Chrome тестов:
+
+```bash
+cd api
+mvn -B -Dtest=AndroidCharacterUiTest test
+```
+
+Для Android Emulator адрес приложения: http://10.0.2.2:8080
+
+## CI/CD
+
+Workflow: .github/workflows/maven-tests.yml
+
+Текущие jobs:
+
+1. API, unit и integration — Ubuntu.
+2. Web Chrome и Firefox — Ubuntu.
+3. Web Safari — macOS.
+4. Android Chrome — Ubuntu и Android Emulator.
+
+Будущий job для iOS должен называться iOS Safari UI Tests и выполняться на macOS runner с Xcode Simulator, Appium и XCUITest driver.
+
+Android job должен явно называться Android Chrome UI Tests.
+
+При ошибке Android job сохраняются логи Appium, Android Logcat, приложения и Maven Surefire reports.
+
+## Git workflow
+
+Работа выполняется в feature-ветках от актуального master. После завершения этапа запускаются проверки, обновляется документация, создаётся commit, выполняется push и открывается Pull Request. После успешного CI выполняется Merge в master.
+
+## Публичный адрес
+
+https://assessment-moment-bargain-extension.trycloudflare.com
+
+Это временный Cloudflare Quick Tunnel, а не постоянный хостинг. Для доступности MacBook, Spring Boot и tunnel должны быть запущены. Приложение использует 127.0.0.1:8080.
+
+## Следующий этап
+
+- Реализовать 10 функциональных iOS Safari тестов.
+- Реализовать 5 негативных iOS Safari тестов.
+- Добавить iOS Safari job в GitHub Actions на macOS.

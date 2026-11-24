@@ -124,6 +124,7 @@ jobs:
 
   # Запускаем Android UI-тесты только в Chrome.
   android-ui-tests:
+    name: Android Chrome UI Tests
     runs-on: ubuntu-latest
     timeout-minutes: 45
 

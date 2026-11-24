@@ -8,18 +8,14 @@ ROOT_DIR="${GITHUB_WORKSPACE:-$(pwd)}"
 BROWSER="${1:-}"
 
 # Проверяем допустимое значение браузера.
-if [[ "$BROWSER" != "chrome" && "$BROWSER" != "firefox" ]]; then
-    echo "Usage: bash .github/scripts/android-ui-tests.sh <chrome|firefox>"
+if [[ "$BROWSER" != "chrome" ]]; then
+    echo "Usage: bash .github/scripts/android-ui-tests.sh chrome"
     exit 1
 fi
 
-# Определяем путь для временного APK Firefox.
-FIREFOX_APK="$ROOT_DIR/firefox-160.0.1-x86_64.apk"
-
-# Сохраняем Android logcat и удаляем временный APK при завершении.
+# Сохраняем Android logcat при завершении скрипта.
 save_android_logs() {
     adb logcat -d > "$ROOT_DIR/android-logcat.log" 2>/dev/null || true
-    rm -f "$FIREFOX_APK"
 }
 trap save_android_logs EXIT
 
@@ -43,22 +39,8 @@ fi
 # Отключаем Play Store, чтобы исключить фоновые обновления.
 adb shell pm disable-user --user 0 com.android.vending
 
-# Устанавливаем и проверяем только выбранный браузер.
-if [[ "$BROWSER" == "chrome" ]]; then
-    # Проверяем наличие Chrome в эмуляторе.
-    adb shell pm path com.android.chrome
-else
-    # Скачиваем Firefox из официального архива Mozilla.
-    curl --fail --location --retry 3 \
-        "https://archive.mozilla.org/pub/fenix/releases/160.0.1/android/fenix-160.0.1-android-x86_64/fenix-160.0.1.multi.android-x86_64.apk" \
-        --output "$FIREFOX_APK"
-
-    # Устанавливаем Firefox в Android Emulator.
-    adb install -r "$FIREFOX_APK"
-
-    # Проверяем установку Firefox.
-    adb shell pm path org.mozilla.firefox
-fi
+# Проверяем наличие Chrome в Android Emulator.
+adb shell pm path com.android.chrome
 
 # Запускаем Appium с поддержкой автоматической загрузки ChromeDriver.
 nohup appium --allow-insecure=uiautomator2:chromedriver_autodownload > "$ROOT_DIR/appium.log" 2>&1 &

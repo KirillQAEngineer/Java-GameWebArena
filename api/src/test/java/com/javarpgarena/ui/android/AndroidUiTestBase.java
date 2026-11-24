@@ -10,22 +10,19 @@ import org.junit.jupiter.api.TestInstance;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.net.URI;
 import java.time.Duration;
-import java.util.Map;
 import java.util.UUID;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AndroidUiTestBase {
 
-    // Общий интерфейс Selenium для Chrome и Firefox.
+    // WebDriver для управления Chrome в Android Emulator.
     protected WebDriver driver;
 
     // Ожидание появления элементов страницы.
@@ -37,54 +34,20 @@ abstract class AndroidUiTestBase {
     // ID персонажа, созданного текущим тестом.
     protected String createdCharacterId;
 
-    // Выбираем браузер через параметр Maven -Dandroid.browser.
+    // Настраиваем Android Chrome через UiAutomator2.
     @BeforeAll
     void setUpAndroid() throws Exception {
-        String browser = System.getProperty("android.browser", "chrome")
-                .trim()
-                .toLowerCase();
+        UiAutomator2Options options = new UiAutomator2Options();
+        options.setPlatformName("Android");
+        options.setAutomationName("UiAutomator2");
+        options.setDeviceName("Android Emulator");
+        options.setCapability("browserName", "Chrome");
+        options.setCapability("appium:chromedriverAutodownload", true);
 
-        // Chrome использует драйвер UiAutomator2.
-        if (browser.equals("chrome")) {
-            UiAutomator2Options options = new UiAutomator2Options();
-            options.setPlatformName("Android");
-            options.setAutomationName("UiAutomator2");
-            options.setDeviceName("Android Emulator");
-            options.setCapability("browserName", "Chrome");
-            options.setCapability("appium:chromedriverAutodownload", true);
-
-            driver = new AndroidDriver(
-                    URI.create("http://127.0.0.1:4723").toURL(),
-                    options
-            );
-
-        // Firefox использует проверенную конфигурацию Gecko.
-        } else if (browser.equals("firefox")) {
-            MutableCapabilities options = new MutableCapabilities();
-            options.setCapability("platformName", System.getProperty("os.name").toLowerCase().contains("mac") ? "mac" : "linux");
-            options.setCapability("browserName", "firefox");
-            options.setCapability("appium:automationName", "Gecko");
-            options.setCapability("moz:firefoxOptions", Map.of(
-                    "androidIntentArguments", java.util.List.of(
-                            "-a", "android.intent.action.VIEW",
-                            "-d", "about:blank",
-                            "--ez", "automationtest", "true"
-                    ),
-                    "androidPackage", "org.mozilla.firefox",
-                    "androidDeviceSerial", "emulator-5554"
-            ));
-
-            driver = new RemoteWebDriver(
-                    URI.create("http://127.0.0.1:4723").toURL(),
-                    options
-            );
-
-        } else {
-            throw new IllegalArgumentException(
-                    "Неизвестный Android-браузер: " + browser
-                            + ". Допустимые значения: chrome, firefox"
-            );
-        }
+        driver = new AndroidDriver(
+                URI.create("http://127.0.0.1:4723").toURL(),
+                options
+        );
 
         // Максимальное ожидание элементов — 15 секунд.
         wait = new WebDriverWait(driver, Duration.ofSeconds(15));

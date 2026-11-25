@@ -73,6 +73,15 @@ abstract class IosUiTestBase {
 
         // Запускаем именно мобильный Safari, а не нативное приложение.
         options.setCapability("browserName", "Safari");
+
+        // Открываем страницу проекта сразу при запуске Safari.
+        options.setCapability("appium:safariInitialUrl", BASE_URL);
+
+        // Даём Web Inspector больше времени на обнаружение страницы в CI.
+        options.setCapability("appium:webviewConnectTimeout", 30000);
+
+        // Увеличиваем количество повторных попыток обнаружения страницы.
+        options.setCapability("appium:webviewConnectRetries", 40);
         options.setCapability("appium:newCommandTimeout", 120);
 
         // Адрес Appium можно изменить для CI или другого окружения.

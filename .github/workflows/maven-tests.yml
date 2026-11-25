@@ -201,3 +201,110 @@ jobs:
             api/target/surefire-reports/
           if-no-files-found: warn
           retention-days: 7
+  # Запускаем iOS Safari UI-тесты на iPhone Simulator.
+  ios-ui-tests:
+    name: iOS Safari UI Tests
+    runs-on: macos-26
+    timeout-minutes: 60
+
+    steps:
+      # Получаем исходный код проекта.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Устанавливаем Java 23 и настраиваем Maven cache.
+      - name: Set up Java 23
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '23'
+          cache: maven
+
+      # Устанавливаем Node.js для запуска Appium.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Выбираем Xcode 26.6, установленный на macOS runner.
+      - name: Select Xcode 26.6
+        run: |
+          sudo xcode-select --switch /Applications/Xcode_26.6.app
+          xcodebuild -version
+
+      # Устанавливаем зафиксированную версию Appium 3.
+      - name: Install Appium 3
+        run: npm install --global appium@3.7.0
+
+      # Устанавливаем совместимый XCUITest driver.
+      - name: Install XCUITest driver
+        run: appium driver install xcuitest@12.12.4
+
+      # Находим iPhone 17 именно в runtime iOS 26.5 и запускаем симулятор.
+      - name: Boot iPhone 17 Simulator
+        run: |
+          DEVICE_UDID=$(xcrun simctl list devices available | awk '/-- iOS 26.5 --/ { in_runtime=1; next } /^-- / { in_runtime=0 } in_runtime && /iPhone 17 \(/ { match($0, /\([A-F0-9-]{36}\)/); print substr($0, RSTART + 1, RLENGTH - 2); exit }')
+          if [ -z "$DEVICE_UDID" ]; then
+            echo "iPhone 17 with iOS 26.5 was not found"
+            xcrun simctl list devices available
+            exit 1
+          fi
+          echo "IOS_UDID=$DEVICE_UDID" >> "$GITHUB_ENV"
+          xcrun simctl boot "$DEVICE_UDID" || true
+          xcrun simctl bootstatus "$DEVICE_UDID" -b
+
+      # Запускаем Appium Server в фоновом режиме.
+      - name: Start Appium Server
+        run: |
+          nohup appium --address 127.0.0.1 --port 4723 > appium.log 2>&1 &
+          for _ in {1..60}; do
+            if curl --silent --fail http://127.0.0.1:4723/status > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat appium.log
+          exit 1
+
+      # Запускаем Spring Boot для тестирования веб-страницы.
+      - name: Start Spring Boot application
+        run: |
+          nohup mvn -B spring-boot:run > app.log 2>&1 &
+          for _ in {1..60}; do
+            if curl --silent --fail http://127.0.0.1:8080/ > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat app.log
+          exit 1
+        working-directory: api
+
+      # Запускаем 15 функциональных и негативных iOS-тестов.
+      - name: Run iOS Safari UI tests
+        run: mvn -B -Dtest=IosCharacterUiTest test
+        working-directory: api
+        env:
+          IOS_DEVICE_NAME: iPhone 17
+          IOS_PLATFORM_VERSION: '26.5'
+          APPIUM_URL: http://127.0.0.1:4723
+
+      # Показываем логи, если запуск или тесты завершились ошибкой.
+      - name: Show logs if tests fail
+        if: failure()
+        run: |
+          cat appium.log || true
+          cat api/app.log || true
+
+      # Сохраняем диагностические файлы при ошибке.
+      - name: Upload iOS test diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-safari-diagnostics
+          path: |
+            appium.log
+            api/app.log
+            api/target/surefire-reports/
+          if-no-files-found: warn
+          retention-days: 7

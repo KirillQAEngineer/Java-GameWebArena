@@ -163,19 +163,11 @@ abstract class AndroidUiTestBase {
                 By.id("notification"), "Персонаж успешно создан."
         ));
 
-        // Находим карточку нового персонажа.
-        WebElement card = wait.until(currentDriver -> {
-            for (WebElement item : currentDriver.findElements(
-                    By.cssSelector("[data-testid=\"character-card\"]"))) {
-                WebElement heading = item.findElement(By.tagName("h3"));
-
-                if (heading.getText().equals(characterName)) {
-                    return item;
-                }
-            }
-
-            return null;
-        });
+        // Находим карточку напрямую по имени.
+        By cardLocator = By.xpath("//article[@data-testid='character-card'][.//h3[normalize-space()='" + characterName + "']]");
+        WebElement card = wait.until(
+                ExpectedConditions.visibilityOfElementLocated(cardLocator)
+        );
 
         // Сохраняем ID для последующей очистки.
         createdCharacterId = card.getAttribute("data-character-id");

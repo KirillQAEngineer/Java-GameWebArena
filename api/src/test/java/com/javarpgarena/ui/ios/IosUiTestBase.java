@@ -51,8 +51,8 @@ abstract class IosUiTestBase {
         // Включаем подробный лог сборки WebDriverAgent для диагностики CI.
         options.setCapability("appium:showXcodeLog", true);
 
-        // Даём WebDriverAgent до трёх минут на запуск в CI.
-        options.setCapability("appium:wdaLaunchTimeout", 180000);
+        // Даём WebDriverAgent до пяти минут на запуск в CI.
+        options.setCapability("appium:wdaLaunchTimeout", 300000);
 
         // Даём iOS Simulator до пяти минут на полную загрузку в CI.
         options.setCapability("appium:simulatorStartupTimeout", 300000);

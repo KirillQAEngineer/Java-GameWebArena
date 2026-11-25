@@ -2,7 +2,6 @@ package com.javarpgarena.ui.ios;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
@@ -143,8 +142,6 @@ class IosCharacterUiTest extends IosUiTestBase {
         WebElement deleteButton = card.findElement(
                 By.cssSelector("[data-testid=\"delete-button\"]"));
         clickElement(deleteButton);
-        Alert alert = wait.until(ExpectedConditions.alertIsPresent());
-        alert.accept();
         wait.until(ExpectedConditions.invisibilityOfElementLocated(cardLocator));
         wait.until(ExpectedConditions.textToBePresentInElementLocated(
                 By.id("notification"), "Персонаж успешно удалён."));

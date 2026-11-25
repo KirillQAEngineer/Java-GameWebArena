@@ -82,6 +82,7 @@ abstract class IosUiTestBase {
 
         // Увеличиваем количество повторных попыток обнаружения страницы.
         options.setCapability("appium:webviewConnectRetries", 40);
+        options.setCapability("appium:autoAcceptAlerts", true);
         options.setCapability("appium:newCommandTimeout", 120);
 
         // Адрес Appium можно изменить для CI или другого окружения.

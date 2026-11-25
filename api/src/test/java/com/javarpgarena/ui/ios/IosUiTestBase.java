@@ -75,7 +75,7 @@ abstract class IosUiTestBase {
         options.setCapability("browserName", "Safari");
 
         // Открываем страницу проекта сразу при запуске Safari.
-        options.setCapability("appium:safariInitialUrl", BASE_URL);
+        options.setCapability("appium:initialDeeplinkUrl", BASE_URL);
 
         // Даём Web Inspector больше времени на обнаружение страницы в CI.
         options.setCapability("appium:webviewConnectTimeout", 30000);
